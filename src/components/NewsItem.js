@@ -20,7 +20,6 @@ export class NewsItem extends Component {
           </div>
         </div>
       </div>
-       
       </>
     );
   }
