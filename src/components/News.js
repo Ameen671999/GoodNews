@@ -2,13 +2,15 @@ import React, { Component } from "react";
 import NewsItem from "./NewsItem";
 import Spinner from "./Spinner";
 import PropTypes from 'prop-types'
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export class News extends Component {
 
   static defaultProps = {
     country: "in",
     pageSize: 8,
-    category: 'general'
+    category: 'general',
+    totalResults:0
   }
 
   static propTypes = {
@@ -16,13 +18,32 @@ export class News extends Component {
     pageSize: PropTypes.number,
     category: PropTypes.string
   }
-  constructor() {
-    super();
+
+  captilizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  fetchMoreData = async () => {
+    this.setState({page: this.state.page + 1});
+    if (!(this.state.page + 1 >Math.ceil(this.state.totalResults / this.props.pageSize))) {
+      let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=b95b74c0d5d64f3284e1e92a7c326bbc&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+      let data = await fetch(url);
+      let parseData = await data.json();
+      this.setState({
+        articles: this.state.articles.concat(parseData.articles),
+        totalResults:parseData.totalResults
+      });
+    }
+  };
+
+  constructor(props) {
+    super(props);
     this.state = {
       articles: [],
-      loading: false,
+      loading: true,
       page: 1,
     };
+    document.title = `GoodNews - ${this.captilizeFirstLetter(this.props.category)}`;
   }
 
   async updateNews() {
@@ -51,28 +72,35 @@ export class News extends Component {
     });
   }
 
-  handlePrevious = async () => {
-    this.setState({
-      page: this.state.page - 1
-    })
-    this.updateNews()
-  };
+  // handlePrevious = async () => {
+  //   this.setState({
+  //     page: this.state.page - 1
+  //   })
+  //   this.updateNews()
+  // };
 
-  handleNext = async () => {
-    this.setState({
-      page: this.state.page + 1
-    })
-    this.updateNews()
-  };
+  // handleNext = async () => {
+  //   this.setState({
+  //     page: this.state.page + 1
+  //   })
+  //   this.updateNews()
+  // };
 
   render() {
     return (
       <>
-        <div className="container my-3">
-          <h1 className="text-center"  style={{margin: "35px 0px"}} > GoodNews - Top headlines </h1>
-          {this.state.loading && <Spinner/>}
+        <div>
+          <h1 className="text-center"  style={{margin: "35px 0px"}} > GoodNews - Top {this.captilizeFirstLetter(this.props.category)} headlines</h1>
+          {/* {this.state.loading && <Spinner/>} */}
+          <InfiniteScroll
+          dataLength={this.state.articles.length}
+          next={this.fetchMoreData}
+          hasMore={this.state.articles.length !== this.state.totalResults }
+          loader={<Spinner/>} 
+        >
+          <div className="container">
           <div className="row">
-            {!this.state.loading && this.state.articles.map((element) => {
+            {this.state.articles.map((element) => {
               return (
                 <div className="col-md-4" key={element.url}>
                   <NewsItem
@@ -88,8 +116,10 @@ export class News extends Component {
               );
             })}
           </div>
+          </div>
+          </InfiniteScroll>
         </div>
-        <div className="container d-flex justify-content-between">
+        {/* <div className="container d-flex justify-content-between">
           <button
             type="button"
             className="btn btn-dark"
@@ -108,7 +138,7 @@ export class News extends Component {
           >
             Next   &rarr;
           </button>
-        </div>
+        </div> */}
       </>
     );
   }
