@@ -9,9 +9,11 @@ export class NewsItem extends Component {
       <>
       <div className="my-3">
       <div className="card">
-      <span className="position-absolute top-0 start-90 translate-middle badge rounded-pill bg-success" style={{ zIndex: '1', left: '90%'}}>
+        <div style={{display: 'flex',justifyContent: "flex-end",position: 'absolute', right:'0'}} >
+        <span className="badge rounded-pill bg-success">
          {source}
           </span>
+        </div>
           <img src={imageUrl?imageUrl:'https://media.azpm.org/master/image/2018/6/29/hero/bbc_wrold_service_radio.jpg'} 
           className="card-img-top" alt="..." />
           <div className="card-body">
